@@ -4,13 +4,22 @@ start:
 	@python3 belltest.py
 
 demo:
-	@python3 showcase/demo_hidden_vs_none.py
+	@python3 showcase/s_1/example.py
+	@python3 showcase/s_2/example.py
+	@python3 showcase/s_3/example.py
+	@python3 showcase/s_4/example.py
 
-minimal:
-	@python3 showcase/minimal_s_gt_2.py
+s_1:
+	@python3 showcase/s_1/example.py
 
-auto_chsh:
-	@python3 showcase/auto_chsh.py
+s_2:
+	@python3 showcase/s_2/example.py
+
+s_3:
+	@python3 showcase/s_3/example.py
+
+s_4:
+	@python3 showcase/s_4/example.py
 
 push:
 	@git add .

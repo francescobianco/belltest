@@ -8,7 +8,7 @@ Il concetto centrale e':
 
 ```python
 class Experiment:
-    def measure(self, setting, context):
+    def measure(self, setting):
         ...
 ```
 
@@ -17,8 +17,25 @@ Per noi l'esperimento e' replicabile.
 Questo significa che la misura ha una forma nota e ripetibile:
 
 ```text
-measure(setting, context) -> +1 oppure -1
+measure(setting) -> +1 oppure -1
 ```
+
+## Environment non e un parametro
+
+`ENV` rappresenta l ambiente indipendente.
+
+Non lo passiamo a `measure`.
+
+La firma corretta resta:
+
+```python
+def measure(self, setting):
+    ...
+```
+
+La misura puo leggere `ENV`, ma `ENV` esiste gia prima della chiamata.
+
+Questo evita di trattare la realtà come una referenza artificiale passata alla funzione.
 
 ## Alice e Bob non sono funzioni
 
@@ -68,8 +85,8 @@ setting_a=1, setting_b=1
 Ogni riga chiama:
 
 ```python
-outcome_a = alice.measure(setting_a, context)
-outcome_b = bob.measure(setting_b, context)
+outcome_a = alice.measure(setting_a)
+outcome_b = bob.measure(setting_b)
 ```
 
 Poi guarda il prodotto:
@@ -88,12 +105,12 @@ Il modello diventa costruttivo:
 - `measure` e' il metodo pubblico noto.
 - `alice` e `bob` sono solo due istanze.
 - La differenza tra `S <= 2` e `S > 2` dipende da cosa il metodo `measure`
-  puo' vedere nel `context`.
+  puo vedere nell ambiente globale `ENV`.
 
 La domanda corretta diventa:
 
 ```text
-quale informazione entra in measure?
+quale informazione measure legge nell ambiente globale?
 ```
 
 Non:

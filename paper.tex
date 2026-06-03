@@ -66,11 +66,11 @@ S \leq 2\sqrt{2} \approx 2.828
 
 We reinterpret the measurement outcomes as calls to a known method, measure, on replicated Experiment instances:
 \begin{verbatim}
-a = experiment_A.measure(setting_A, lambda)
-b = experiment_B.measure(setting_B, lambda)
+a = experiment_A.measure(setting_A)
+b = experiment_B.measure(setting_B)
 \end{verbatim}
 
-where $\lambda$ represents a shared hidden variable or information channel, and experiment_A and experiment_B are two replicated instances exposing the same public measurement method.
+where the hidden variable belongs to a global Environment. It is not passed to measure; measure receives only the local setting and reads the independent Environment when needed.
 
 This replicable-measurement perspective allows us to systematically explore the space of possible correlations by varying the structure and information content of these Experiment instances.
 
@@ -208,21 +208,26 @@ The author thanks the quantum information community for inspiring discussions on
 \begin{verbatim}
 import random
 
+class Environment:
+    hidden = 0.0
+
+ENV = Environment()
+
 class Experiment:
     def __init__(self, name, rule):
         self.name = name
         self.rule = rule
 
-    def measure(self, setting, hidden):
-        return self.rule(self.name, setting, hidden)
+    def measure(self, setting):
+        return self.rule(self.name, setting)
 
-def threshold_rule(instance_name, setting, hidden):
+def threshold_rule(instance_name, setting):
     thresholds = {
         "alice": (0.25, 0.70),
         "bob": (0.40, 0.60),
     }
     threshold = thresholds[instance_name][setting]
-    return 1 if hidden >= threshold else -1
+    return 1 if ENV.hidden >= threshold else -1
 
 def run_chsh(n_trials=10000):
     settings = [(0,0), (0,1), (1,0), (1,1)]
@@ -231,10 +236,10 @@ def run_chsh(n_trials=10000):
     bob = Experiment("bob", threshold_rule)
 
     for _ in range(n_trials):
-        hidden = random.random()
+        ENV.hidden = random.random()
         for a_set, b_set in settings:
-            a = alice.measure(a_set, hidden)
-            b = bob.measure(b_set, hidden)
+            a = alice.measure(a_set)
+            b = bob.measure(b_set)
             results[(a_set, b_set)].append(a * b)
 
     E = {k: sum(v)/len(v) for k,v in results.items()}

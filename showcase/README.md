@@ -1,38 +1,35 @@
-# Bell showcase
+# Showcase
 
-This folder contains executable CHSH experiments that classify response
-Experiment.measure rules by their observable information anatomy.
+Questa cartella non contiene un framework condiviso.
 
-Run the scripts from the repository root:
+Ogni esempio e' autonomo e definisce al suo interno:
 
-```bash
-python3 showcase/minimal_s_gt_2.py
-python3 showcase/demo_hidden_vs_none.py
-python3 showcase/auto_chsh.py
-python3 showcase/classification_table.py
-python3 showcase/unknown_function_probe.py
-python3 showcase/coupling_sweep.py
+- `Environment` globale, cioe' la realtà indipendente.
+- `ENV`, istanza globale dell'ambiente.
+- `Experiment`, classe replicabile.
+- `Experiment.measure(setting)`, metodo noto della misura.
+- il calcolo CHSH locale al file.
+
+`ENV` non viene passato a `measure`.
+
+La misura riceve solo:
+
+```python
+measure(setting)
 ```
 
-## Interpretation
+## Classificazione
 
-The CHSH score is used here as a diagnostic instrument:
+- `s_1/`: esempi con `S < 1`
+- `s_2/`: esempi con `1 <= S < 2`
+- `s_3/`: esempi con `2 <= S < 3`
+- `s_4/`: esempi con `3 <= S <= 4`
 
-- `S <= 2`: compatible with local hidden-variable structure.
-- `2 < S <= 2*sqrt(2)`: quantum-range correlation strength.
-- `S > 2*sqrt(2)`: post-quantum sampler, explicit leakage, or another
-  non-local/non-standard mechanism.
+## Comandi
 
-The extra anatomy fields make the result more useful for a black-box measurement:
-
-- `signalling`: whether one side's marginal output changes when the remote
-  setting changes.
-- `correlation_curvature`: the CHSH-oriented second difference of the four
-  correlations.
-- `correlation_contrast`: the spread between the strongest and weakest
-  measured correlations.
-- `diagnostic_label`: a compact qualitative classification of the observed
-  structure.
-
-This is not a detector of real quantum mechanics by itself.  It is a way to
-turn Bell-style measurements into a table of measurement signatures.
+```bash
+python3 showcase/s_1/example.py
+python3 showcase/s_2/example.py
+python3 showcase/s_3/example.py
+python3 showcase/s_4/example.py
+```

@@ -1,13 +1,14 @@
 # belltest
 
-Functional experiments around the CHSH/Bell inequality.
+Experiments around CHSH/Bell inequality classified by S value.
 
 The main exploratory material is in [`showcase/`](showcase/):
 
 ```bash
-python3 showcase/classification_table.py
-python3 showcase/unknown_function_probe.py
-python3 showcase/coupling_sweep.py
+python3 showcase/s_1/example.py
+python3 showcase/s_2/example.py
+python3 showcase/s_3/example.py
+python3 showcase/s_4/example.py
 ```
 
-The showcase treats Bell measurements as a diagnostic instrument for the internal anatomy of Experiment.measure rules: local structure, hidden shared state, remote-setting leakage, quantum-range correlations, and post-quantum examples.
+The showcase is split into s_1, s_2, s_3, and s_4 folders. Each example is standalone: it defines Environment, global ENV, Experiment, and measure(setting) in the same file.

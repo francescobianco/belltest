@@ -145,8 +145,8 @@ e lo tratta in modo diverso.
 Se avessimo due istanze locali separate:
 
 ```python
-alice.measure(a, context)
-bob.measure(b, context)
+alice.measure(a)
+bob.measure(b)
 ```
 
 non potremmo scegliere liberamente solo l'ultima cella della tabella.
@@ -172,11 +172,11 @@ Questa e' la costruzione minima.
 ## Comando
 
 ```bash
-python3 showcase/minimal_s_gt_2.py
+python3 showcase/s_4/example.py
 ```
 
 Oppure:
 
 ```bash
-make minimal
+make s_4
 ```

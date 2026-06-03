@@ -40,8 +40,8 @@ Vuol dire:
 Esempio mentale:
 
 ```text
-alice.measure(setting, context) -> +1 oppure -1
-bob.measure(setting, context)   -> +1 oppure -1
+alice.measure(setting) -> +1 oppure -1
+bob.measure(setting)   -> +1 oppure -1
 ```
 
 Anche se le due istanze condividono `lambda`, i loro metodi `measure` restano locali.
@@ -80,8 +80,8 @@ misura_congiunta(setting_a, setting_b) -> risposta_a, risposta_b
 La misura non e piu semplicemente:
 
 ```text
-alice.measure(setting_a, context)
-bob.measure(setting_b, context)
+alice.measure(setting_a)
+bob.measure(setting_b)
 ```
 
 Produce invece una coppia di risposte gia' correlata.
@@ -129,10 +129,10 @@ diagnostic_label
 
 Se `S > 2` ma il signalling e' alto, probabilmente c'e' leakage informativo.
 
-Se `S > 2` ma il signalling e' basso, il comportamento assomiglia di e'' a una
+Se `S > 2` ma il signalling e' basso, il comportamento assomiglia di piu a una
 correlazione quantum-like.
 
-# auto_chsh
+# misura replicata
 
 Nel CHSH normale abbiamo due istanze replicabili:
 
@@ -141,22 +141,22 @@ alice.measure(...)
 bob.measure(...)
 ```
 
-In `auto_chsh` invece vogliamo studiare un solo metodo `measure confrontato con se stesso.
+Nella nuova showcase studiamo esempi autonomi divisi per valore di S.
 
 La forma diventa:
 
 ```text
-F(role, setting, context) -> +1 oppure -1
+measure(setting) -> +1 oppure -1
 ```
 
-Lo stesso metodo `measure viene chiamato su due istanze:
+Lo stesso metodo `measure` viene chiamato su due istanze:
 
 ```text
-alice.measure(setting_a, context)
-bob.measure(setting_b, context)
+alice.measure(setting_a)
+bob.measure(setting_b)
 ```
 
-Quindi non stiamo e'' chiedendo:
+Quindi non stiamo chiedendo:
 
 ```text
 che cosa succede quando replichiamo lo stesso esperimento in due istanze?
@@ -168,17 +168,16 @@ Stiamo chiedendo:
 che anatomia interna ha il metodo measure quando lo replico in due istanze?
 ```
 
-`auto_chsh` serve proprio a questo: trasformare il test di Bell in una sonda
-per una misura ignota.
+La cartella `showcase/s_4` mostra il caso in cui una misura legge l ambiente globale e raggiunge S alto.
 
 Comando:
 
 ```bash
-python3 showcase/auto_chsh.py
+python3 showcase/s_4/example.py
 ```
 
 Oppure:
 
 ```bash
-make auto_chsh
+make s_4
 ```
