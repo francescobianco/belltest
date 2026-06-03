@@ -172,11 +172,11 @@ Questa e' la costruzione minima.
 ## Comando
 
 ```bash
-python3 showcase/s_4/example.py
+python3 showcase/s_40/example.py
 ```
 
 Oppure:
 
 ```bash
-make s_4
+make s_40
 ```

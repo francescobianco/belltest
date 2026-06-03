@@ -168,16 +168,16 @@ Stiamo chiedendo:
 che anatomia interna ha il metodo measure quando lo replico in due istanze?
 ```
 
-La cartella `showcase/s_4` mostra il caso in cui una misura legge l ambiente globale e raggiunge S alto.
+La cartella `showcase/s_40` mostra il caso in cui una misura legge l ambiente globale e raggiunge S alto.
 
 Comando:
 
 ```bash
-python3 showcase/s_4/example.py
+python3 showcase/s_40/example.py
 ```
 
 Oppure:
 
 ```bash
-make s_4
+make s_40
 ```

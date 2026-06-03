@@ -20,9 +20,9 @@ Questo significa che la misura ha una forma nota e ripetibile:
 measure(setting) -> +1 oppure -1
 ```
 
-## Environment non e un parametro
+## context non e un parametro
 
-`ENV` rappresenta l ambiente indipendente.
+`context` rappresenta l ambiente indipendente.
 
 Non lo passiamo a `measure`.
 
@@ -33,7 +33,7 @@ def measure(self, setting):
     ...
 ```
 
-La misura puo leggere `ENV`, ma `ENV` esiste gia prima della chiamata.
+La misura puo leggere `context`, ma `context` esiste gia prima della chiamata.
 
 Questo evita di trattare la realtà come una referenza artificiale passata alla funzione.
 
@@ -105,7 +105,7 @@ Il modello diventa costruttivo:
 - `measure` e' il metodo pubblico noto.
 - `alice` e `bob` sono solo due istanze.
 - La differenza tra `S <= 2` e `S > 2` dipende da cosa il metodo `measure`
-  puo vedere nell ambiente globale `ENV`.
+  puo vedere nell dict globale `context`.
 
 La domanda corretta diventa:
 
