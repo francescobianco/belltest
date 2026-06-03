@@ -6,6 +6,8 @@ functions by their observable information anatomy.
 Run the scripts from the repository root:
 
 ```bash
+python3 showcase/demo_hidden_vs_none.py
+python3 showcase/auto_chsh.py
 python3 showcase/classification_table.py
 python3 showcase/unknown_function_probe.py
 python3 showcase/coupling_sweep.py
