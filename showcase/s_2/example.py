@@ -1,7 +1,7 @@
 import random
 
 
-context = {"hidden": 0, "a": 0, "b": 0, "side": 0, "rng": random.Random(22)}
+context = {"hidden": 0, "a": 0, "b": 0, "rng": random.Random(22)}
 
 
 class Experiment:
