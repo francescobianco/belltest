@@ -1,6 +1,6 @@
-"""Use Bell/CHSH probes as a measuring instrument for an unknown function.
+"""Use Bell/CHSH probes as a measuring instrument for an unknown measure.
 
-The unknown function is represented as a black box with two outputs.  We run it
+The unknown measure is represented as a black box with two measurement outputs.  We run it
 under the four CHSH settings and summarize its internal anatomy from the
 observable correlations.
 """
@@ -19,36 +19,36 @@ from bell_lab import (
     format_expectations,
 )
 
-UnknownFunction = Callable[[int, int, float, random.Random], Tuple[int, int]]
+UnknownMeasure = Callable[[int, int, float, random.Random], Tuple[int, int]]
 
 
-def hidden_local_function(
-    alice_setting: int,
-    bob_setting: int,
+def hidden_local_measure(
+    setting_a: int,
+    setting_b: int,
     hidden: float,
     rng: random.Random,
 ) -> Tuple[int, int]:
     del rng
-    alice = 1 if hidden > (0.2 if alice_setting == 0 else 0.65) else -1
-    bob = 1 if hidden > (0.35 if bob_setting == 0 else 0.50) else -1
-    return alice, bob
+    outcome_a = 1 if hidden > (0.2 if setting_a == 0 else 0.65) else -1
+    outcome_b = 1 if hidden > (0.35 if setting_b == 0 else 0.50) else -1
+    return outcome_a, outcome_b
 
 
-def leaky_unknown_function(
-    alice_setting: int,
-    bob_setting: int,
+def leaky_unknown_measure(
+    setting_a: int,
+    setting_b: int,
     hidden: float,
     rng: random.Random,
 ) -> Tuple[int, int]:
     del hidden, rng
-    alice = 1
-    bob = -1 if alice_setting == 1 and bob_setting == 1 else 1
-    return alice, bob
+    outcome_a = 1
+    outcome_b = -1 if setting_a == 1 and setting_b == 1 else 1
+    return outcome_a, outcome_b
 
 
-def noisy_quantum_like_function(
-    alice_setting: int,
-    bob_setting: int,
+def noisy_quantum_like_measure(
+    setting_a: int,
+    setting_b: int,
     hidden: float,
     rng: random.Random,
 ) -> Tuple[int, int]:
@@ -59,37 +59,37 @@ def noisy_quantum_like_function(
         (1, 0): -0.707,
         (1, 1): 0.707,
     }
-    product = 1 if rng.random() < (1.0 + target_products[(alice_setting, bob_setting)]) / 2.0 else -1
-    alice = 1 if rng.random() < 0.5 else -1
-    return alice, alice * product
+    product = 1 if rng.random() < (1.0 + target_products[(setting_a, setting_b)]) / 2.0 else -1
+    outcome_a = 1 if rng.random() < 0.5 else -1
+    return outcome_a, outcome_a * product
 
 
-def measure_unknown(
+def measure_black_box(
     name: str,
-    unknown: UnknownFunction,
+    unknown: UnknownMeasure,
     trials: int = 20_000,
     seed: int = 19,
 ) -> None:
     rng = random.Random(seed)
     products = {setting: [] for setting in SETTINGS}
-    alice_marginals = {setting: [] for setting in SETTINGS}
-    bob_marginals = {setting: [] for setting in SETTINGS}
+    a_marginals = {setting: [] for setting in SETTINGS}
+    b_marginals = {setting: [] for setting in SETTINGS}
 
     for trial in range(trials):
         hidden = rng.random()
-        for alice_setting, bob_setting in SETTINGS:
-            ctx = TrialContext(trial, hidden, alice_setting, bob_setting, rng)
+        for setting_a, setting_b in SETTINGS:
+            ctx = TrialContext(trial, hidden, setting_a, setting_b, rng)
             del ctx
-            alice, bob = unknown(alice_setting, bob_setting, hidden, rng)
-            products[(alice_setting, bob_setting)].append(alice * bob)
-            alice_marginals[(alice_setting, bob_setting)].append(alice)
-            bob_marginals[(alice_setting, bob_setting)].append(bob)
+            outcome_a, outcome_b = unknown(setting_a, setting_b, hidden, rng)
+            products[(setting_a, setting_b)].append(outcome_a * outcome_b)
+            a_marginals[(setting_a, setting_b)].append(outcome_a)
+            b_marginals[(setting_a, setting_b)].append(outcome_b)
 
     expectations = {
         setting: sum(values) / len(values) for setting, values in products.items()
     }
     s_value = chsh_value(expectations)
-    anatomy = anatomy_signature(expectations, alice_marginals, bob_marginals)
+    anatomy = anatomy_signature(expectations, a_marginals, b_marginals)
 
     print(name)
     print("-" * len(name))
@@ -106,9 +106,9 @@ def measure_unknown(
 
 
 def main() -> None:
-    measure_unknown("hidden_local_function", hidden_local_function)
-    measure_unknown("leaky_unknown_function", leaky_unknown_function)
-    measure_unknown("noisy_quantum_like_function", noisy_quantum_like_function)
+    measure_black_box("hidden_local_measure", hidden_local_measure)
+    measure_black_box("leaky_unknown_measure", leaky_unknown_measure)
+    measure_black_box("noisy_quantum_like_measure", noisy_quantum_like_measure)
 
 
 if __name__ == "__main__":

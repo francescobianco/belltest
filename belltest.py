@@ -1,52 +1,53 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
 import random
+from typing import Callable
 
 
-def hidden_variable():
-    return random.random()
+SETTINGS = ((0, 0), (0, 1), (1, 0), (1, 1))
+MeasureRule = Callable[[str, int, float], int]
 
-def alice(setting, hidden):
-    global q
-    if setting == 0:
-        v = q
-        q = q - v
-        return 1 if v > 10 else -1
-    else:
-        return 1 #if hidden < 0.5 else -1
-        #v = random.random() * q
-        #q = q - v
-        #return 1 if v > 10 else -1
-    #return 1
 
-def bob(setting, hidden):
-    global q
-    if setting == 0:
-        v = q
-        q = q - v
-        return 1 if v > 10 else -1
-    else:
-        return 1 #if hidden > 0.8 else -1
-        #v = random.random() * q
-        #q = q - v
-        #return 1 if v > 10 else -1
-    #return -1
+@dataclass(frozen=True)
+class Experiment:
+    name: str
+    rule: MeasureRule
 
-def run_chsh(n_trials=1000000):
-    global q
-    settings = [(0,0), (0,1), (1,0), (1,1)]
-    results = {s: [] for s in settings}
+    def measure(self, setting: int, hidden: float) -> int:
+        return self.rule(self.name, setting, hidden)
+
+
+def threshold_rule(role: str, setting: int, hidden: float) -> int:
+    thresholds = {
+        "alice": (0.25, 0.70),
+        "bob": (0.40, 0.60),
+    }
+    threshold = thresholds[role][setting]
+    return 1 if hidden >= threshold else -1
+
+
+def run_chsh(n_trials: int = 100_000) -> tuple[float, dict[tuple[int, int], float]]:
+    alice = Experiment("alice", threshold_rule)
+    bob = Experiment("bob", threshold_rule)
+    products = {setting: [] for setting in SETTINGS}
+
     for _ in range(n_trials):
-        hidden = hidden_variable()
-        q = 20
-        for a_set, b_set in settings:
-            a = alice(a_set, hidden)
-            b = bob(b_set, hidden)
-            results[(a_set, b_set)].append(a * b)
+        hidden = random.random()
+        for setting_a, setting_b in SETTINGS:
+            outcome_a = alice.measure(setting_a, hidden)
+            outcome_b = bob.measure(setting_b, hidden)
+            products[(setting_a, setting_b)].append(outcome_a * outcome_b)
 
-    E = {k: sum(v)/len(v) for k,v in results.items()}
-    S = abs(E[(0,0)] + E[(0,1)] + E[(1,0)] - E[(1,1)])
+    expectations = {key: sum(values) / len(values) for key, values in products.items()}
+    s_value = abs(
+        expectations[(0, 0)]
+        + expectations[(0, 1)]
+        + expectations[(1, 0)]
+        - expectations[(1, 1)]
+    )
+    return s_value, expectations
 
-    return S, E
 
-q = 20
-
-print(run_chsh())
+if __name__ == "__main__":
+    print(run_chsh())

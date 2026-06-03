@@ -6,6 +6,9 @@ start:
 demo:
 	@python3 showcase/demo_hidden_vs_none.py
 
+minimal:
+	@python3 showcase/minimal_s_gt_2.py
+
 auto_chsh:
 	@python3 showcase/auto_chsh.py
 

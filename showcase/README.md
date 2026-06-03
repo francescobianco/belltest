@@ -1,11 +1,12 @@
 # Bell showcase
 
 This folder contains executable CHSH experiments that classify response
-functions by their observable information anatomy.
+Experiment.measure rules by their observable information anatomy.
 
 Run the scripts from the repository root:
 
 ```bash
+python3 showcase/minimal_s_gt_2.py
 python3 showcase/demo_hidden_vs_none.py
 python3 showcase/auto_chsh.py
 python3 showcase/classification_table.py
@@ -22,7 +23,7 @@ The CHSH score is used here as a diagnostic instrument:
 - `S > 2*sqrt(2)`: post-quantum sampler, explicit leakage, or another
   non-local/non-standard mechanism.
 
-The extra anatomy fields make the result more useful for a black-box function:
+The extra anatomy fields make the result more useful for a black-box measurement:
 
 - `signalling`: whether one side's marginal output changes when the remote
   setting changes.
@@ -34,4 +35,4 @@ The extra anatomy fields make the result more useful for a black-box function:
   structure.
 
 This is not a detector of real quantum mechanics by itself.  It is a way to
-turn Bell-style measurements into a table of functional signatures.
+turn Bell-style measurements into a table of measurement signatures.

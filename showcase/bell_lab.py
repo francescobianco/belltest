@@ -1,8 +1,9 @@
-"""Reusable CHSH experiments for classifying functional information flow.
+"""Reusable CHSH experiments built around a replicable Experiment.measure API.
 
-Each model is intentionally represented as ordinary Python functions.  The
-diagnostics are not a proof of quantum behavior; they are a measurement tool
-for the internal anatomy of a black-box response function.
+The central object is not an alice function or a bob function. The central
+object is Experiment: a replicable measuring device with a known
+measure(setting, context) method. Alice and Bob are only two instances of
+that class used in two positions of the CHSH table.
 """
 
 from __future__ import annotations
@@ -22,17 +23,28 @@ SETTINGS: Tuple[Settings, ...] = ((0, 0), (0, 1), (1, 0), (1, 1))
 
 @dataclass(frozen=True)
 class TrialContext:
-    """Information available to a measurement function during one trial."""
+    """Information available to an Experiment.measure call during one trial."""
 
     trial: int
     hidden: float
-    alice_setting: Setting
-    bob_setting: Setting
+    setting_a: Setting
+    setting_b: Setting
     rng: random.Random
 
 
-ResponseFunction = Callable[[Setting, TrialContext], Outcome]
+MeasureStrategy = Callable[[str, Setting, TrialContext], Outcome]
 JointModel = Callable[[Settings, TrialContext], Tuple[Outcome, Outcome]]
+
+
+@dataclass(frozen=True)
+class Experiment:
+    """Replicable measuring device with one public measurement method."""
+
+    name: str
+    strategy: MeasureStrategy
+
+    def measure(self, setting: Setting, context: TrialContext) -> Outcome:
+        return self.strategy(self.name, setting, context)
 
 
 @dataclass(frozen=True)
@@ -40,8 +52,8 @@ class ModelSpec:
     name: str
     family: str
     description: str
-    alice: ResponseFunction | None = None
-    bob: ResponseFunction | None = None
+    experiment_a: Experiment | None = None
+    experiment_b: Experiment | None = None
     joint: JointModel | None = None
 
 
@@ -69,50 +81,50 @@ def quantum_expectation(a_angle: float, b_angle: float) -> float:
 def quantum_like_joint(settings: Settings, ctx: TrialContext) -> Tuple[Outcome, Outcome]:
     """Sample a no-signalling quantum-like pair from the CHSH optimum angles."""
 
-    alice_angles = (0.0, math.pi / 2.0)
-    bob_angles = (math.pi / 4.0, -math.pi / 4.0)
+    a_angles = (0.0, math.pi / 2.0)
+    b_angles = (math.pi / 4.0, -math.pi / 4.0)
     expected_product = quantum_expectation(
-        alice_angles[settings[0]], bob_angles[settings[1]]
+        a_angles[settings[0]], b_angles[settings[1]]
     )
     same_probability = (1.0 + expected_product) / 2.0
     product = 1 if ctx.rng.random() < same_probability else -1
-    alice_outcome = 1 if ctx.rng.random() < 0.5 else -1
-    return alice_outcome, alice_outcome * product
+    outcome_a = 1 if ctx.rng.random() < 0.5 else -1
+    return outcome_a, outcome_a * product
 
 
 def pr_box_joint(settings: Settings, ctx: TrialContext) -> Tuple[Outcome, Outcome]:
     """Super-quantum no-signalling box with algebraic CHSH value 4."""
 
-    alice_bit = 1 if ctx.rng.random() < 0.5 else 0
-    bob_bit = alice_bit ^ (settings[0] & settings[1])
-    return bit_to_outcome(alice_bit), bit_to_outcome(bob_bit)
+    a_bit = 1 if ctx.rng.random() < 0.5 else 0
+    b_bit = a_bit ^ (settings[0] & settings[1])
+    return bit_to_outcome(a_bit), bit_to_outcome(b_bit)
 
 
 def bit_to_outcome(bit: int) -> Outcome:
     return 1 if bit == 0 else -1
 
 
-def deterministic_table(table: Sequence[Outcome]) -> ResponseFunction:
-    return lambda setting, ctx: table[setting]
+def deterministic_table(table: Sequence[Outcome]) -> MeasureStrategy:
+    return lambda role, setting, ctx: table[setting]
 
 
-def threshold_response(low: float, high: float) -> ResponseFunction:
-    def response(setting: Setting, ctx: TrialContext) -> Outcome:
+def threshold_response(low: float, high: float) -> MeasureStrategy:
+    def response(role: str, setting: Setting, ctx: TrialContext) -> Outcome:
         threshold = low if setting == 0 else high
         return sign(ctx.hidden >= threshold)
 
     return response
 
 
-def remote_leak_bob(setting: Setting, ctx: TrialContext) -> Outcome:
-    """Bob can read Alice's setting: a one-bit locality violation."""
+def remote_setting_leak(role: str, setting: Setting, ctx: TrialContext) -> Outcome:
+    """The second instance can read the first instance setting."""
 
-    if setting == 0:
+    if role != "bob" or setting == 0:
         return 1
-    return -1 if ctx.alice_setting == 1 else 1
+    return -1 if ctx.setting_a == 1 else 1
 
 
-def independent_noise(setting: Setting, ctx: TrialContext) -> Outcome:
+def independent_noise(role: str, setting: Setting, ctx: TrialContext) -> Outcome:
     return 1 if ctx.rng.random() < 0.5 else -1
 
 
@@ -120,30 +132,30 @@ MODELS: Tuple[ModelSpec, ...] = (
     ModelSpec(
         name="constant_local",
         family="local_deterministic",
-        description="Both observers return fixed local values.",
-        alice=deterministic_table((1, 1)),
-        bob=deterministic_table((1, 1)),
+        description="Two Experiment instances return fixed local values.",
+        experiment_a=Experiment("alice", deterministic_table((1, 1))),
+        experiment_b=Experiment("bob", deterministic_table((1, 1))),
     ),
     ModelSpec(
         name="shared_thresholds",
         family="local_hidden_variable",
-        description="Both observers see the same lambda but only their own setting.",
-        alice=threshold_response(0.25, 0.70),
-        bob=threshold_response(0.40, 0.60),
+        description="Two Experiment instances see lambda but only their own setting.",
+        experiment_a=Experiment("alice", threshold_response(0.25, 0.70)),
+        experiment_b=Experiment("bob", threshold_response(0.40, 0.60)),
     ),
     ModelSpec(
         name="independent_noise",
         family="uncorrelated",
         description="Responses are local and random with no stable correlation.",
-        alice=independent_noise,
-        bob=independent_noise,
+        experiment_a=Experiment("alice", independent_noise),
+        experiment_b=Experiment("bob", independent_noise),
     ),
     ModelSpec(
         name="one_bit_remote_leak",
         family="non_local_leak",
-        description="Bob's second setting reads Alice's setting.",
-        alice=deterministic_table((1, 1)),
-        bob=remote_leak_bob,
+        description="The second Experiment instance reads the first instance setting.",
+        experiment_a=Experiment("alice", deterministic_table((1, 1))),
+        experiment_b=Experiment("bob", remote_setting_leak),
     ),
     ModelSpec(
         name="quantum_singlet_sampler",
@@ -167,8 +179,8 @@ def run_model(
 ) -> CHSHResult:
     rng = random.Random(seed)
     products: Dict[Settings, list[int]] = {setting: [] for setting in SETTINGS}
-    alice_marginals: Dict[Settings, list[int]] = {setting: [] for setting in SETTINGS}
-    bob_marginals: Dict[Settings, list[int]] = {setting: [] for setting in SETTINGS}
+    a_marginals: Dict[Settings, list[int]] = {setting: [] for setting in SETTINGS}
+    b_marginals: Dict[Settings, list[int]] = {setting: [] for setting in SETTINGS}
 
     for trial in range(trials):
         hidden = rng.random()
@@ -176,26 +188,26 @@ def run_model(
             ctx = TrialContext(
                 trial=trial,
                 hidden=hidden,
-                alice_setting=settings[0],
-                bob_setting=settings[1],
+                setting_a=settings[0],
+                setting_b=settings[1],
                 rng=rng,
             )
             if model.joint is not None:
-                alice_outcome, bob_outcome = model.joint(settings, ctx)
+                outcome_a, outcome_b = model.joint(settings, ctx)
             else:
-                if model.alice is None or model.bob is None:
-                    raise ValueError(f"model {model.name} has no runnable functions")
-                alice_outcome = model.alice(settings[0], ctx)
-                bob_outcome = model.bob(settings[1], ctx)
-            products[settings].append(alice_outcome * bob_outcome)
-            alice_marginals[settings].append(alice_outcome)
-            bob_marginals[settings].append(bob_outcome)
+                if model.experiment_a is None or model.experiment_b is None:
+                    raise ValueError(f"model {model.name} has no runnable experiments")
+                outcome_a = model.experiment_a.measure(settings[0], ctx)
+                outcome_b = model.experiment_b.measure(settings[1], ctx)
+            products[settings].append(outcome_a * outcome_b)
+            a_marginals[settings].append(outcome_a)
+            b_marginals[settings].append(outcome_b)
 
     expectations = {
         settings: sum(values) / len(values) for settings, values in products.items()
     }
     s_value = chsh_value(expectations)
-    anatomy = anatomy_signature(expectations, alice_marginals, bob_marginals)
+    anatomy = anatomy_signature(expectations, a_marginals, b_marginals)
     return CHSHResult(
         name=model.name,
         family=model.family,
@@ -226,17 +238,17 @@ def classify_s_value(s_value: float) -> str:
 
 def anatomy_signature(
     expectations: Mapping[Settings, float],
-    alice_marginals: Mapping[Settings, Sequence[int]],
-    bob_marginals: Mapping[Settings, Sequence[int]],
+    a_marginals: Mapping[Settings, Sequence[int]],
+    b_marginals: Mapping[Settings, Sequence[int]],
 ) -> Mapping[str, float | str]:
-    """Summarize a function by the information-flow traces visible at CHSH level."""
+    """Summarize an experiment by information-flow traces visible at CHSH level."""
 
-    alice_signal = max(
-        abs(mean(alice_marginals[(a, 0)]) - mean(alice_marginals[(a, 1)]))
+    a_signal = max(
+        abs(mean(a_marginals[(a, 0)]) - mean(a_marginals[(a, 1)]))
         for a in (0, 1)
     )
-    bob_signal = max(
-        abs(mean(bob_marginals[(0, b)]) - mean(bob_marginals[(1, b)]))
+    b_signal = max(
+        abs(mean(b_marginals[(0, b)]) - mean(b_marginals[(1, b)]))
         for b in (0, 1)
     )
     curvature = (
@@ -246,7 +258,7 @@ def anatomy_signature(
         + expectations[(1, 1)]
     )
     contrast = max(expectations.values()) - min(expectations.values())
-    signalling = max(alice_signal, bob_signal)
+    signalling = max(a_signal, b_signal)
     return {
         "signalling": signalling,
         "correlation_curvature": curvature,

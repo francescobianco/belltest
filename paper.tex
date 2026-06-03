@@ -14,7 +14,7 @@
 
 \begin{document}
 
-\title{A Functional Computational Framework for Exploring Informational Entanglement via CHSH Inequality Simulations}
+\title{A Replicable Experiment.measure Framework for Exploring Informational Entanglement via CHSH}
 
 \author{Francesco Bianco}
 
@@ -23,24 +23,24 @@
 \maketitle
 
 \begin{abstract}
-We present a novel computational framework to investigate the informational structure of entanglement through the CHSH inequality. By treating CHSH experiments as composed of deterministic or probabilistic functions, we simulate a range of models that either satisfy or violate the classical CHSH bound. Our approach focuses on retro-analyzing these function pairs to characterize the minimal informational coupling necessary to reproduce quantum-like correlations. This functional perspective opens a new line of inquiry into the computational anatomy of entanglement, offering both pedagogical and theoretical value.
+We present a novel computational framework to investigate the informational structure of entanglement through the CHSH inequality. By treating CHSH experiments as composed of replicable Experiment instances exposing a measure method, we simulate a range of models that either satisfy or violate the classical CHSH bound. Our approach focuses on retro-analyzing these replicated measurement instances to characterize the minimal informational coupling necessary to reproduce quantum-like correlations. This replicable-measurement perspective opens a new line of inquiry into the computational anatomy of entanglement, offering both pedagogical and theoretical value.
 
 \textbf{Keywords:} Quantum entanglement, CHSH inequality, Bell's theorem, computational simulation, information theory
 \end{abstract}
 
 \section{Introduction}
 
-The CHSH inequality~\cite{clauser1969} is a cornerstone of quantum mechanics, revealing a critical divide between classical local realism and quantum predictions. Traditional treatments examine this divide through probabilistic and analytical methods~\cite{bell1964}. However, from a computational perspective, little attention has been given to how different functional constructions of observers (e.g., Alice and Bob) influence the correlation outcomes.
+The CHSH inequality~\cite{clauser1969} is a cornerstone of quantum mechanics, revealing a critical divide between classical local realism and quantum predictions. Traditional treatments examine this divide through probabilistic and analytical methods~\cite{bell1964}. However, from a computational perspective, little attention has been given to how different constructions of replicated measurement instances influence the correlation outcomes.
 
-The violation of Bell inequalities has profound implications for our understanding of quantum mechanics and information theory~\cite{brassard2005}. While extensive theoretical and experimental work has established the quantum mechanical predictions, the computational underpinnings of these correlations remain less explored from a functional programming perspective.
+The violation of Bell inequalities has profound implications for our understanding of quantum mechanics and information theory~\cite{brassard2005}. While extensive theoretical and experimental work has established the quantum mechanical predictions, the computational underpinnings of these correlations remain less explored from a replicable measurement perspective.
 
-In this work, we construct an experimental simulator using simple functions to model the behavior of Alice and Bob, each receiving inputs (measurement settings) and potentially sharing hidden variables. By simulating these functions and measuring the resulting CHSH value, we explore how different informational structures lead to classical or quantum-like behavior. This approach provides new insights into the minimal computational requirements for reproducing non-local correlations.
+In this work, we construct an experimental simulator using two instances of an Experiment class to model replicated measurement, each receiving inputs (measurement settings) and potentially sharing hidden variables. By simulating these Experiment instances and measuring the resulting CHSH value, we explore how different informational structures lead to classical or quantum-like behavior. This approach provides new insights into the minimal computational requirements for reproducing non-local correlations.
 
 \section{Theoretical Background}
 
 \subsection{The CHSH Inequality}
 
-Consider two spatially separated observers, Alice and Bob, who perform measurements on a shared quantum system. Alice chooses between two measurement settings $A_0$ and $A_1$, while Bob chooses between $B_0$ and $B_1$. Each measurement yields outcomes $a, b \in \{-1, +1\}$.
+Consider two replicated measurement instances, conventionally named Alice and Bob, that perform measurements on a shared system. These names denote instances of an Experiment class, not special functions. The first instance chooses between settings A_0 and A_1, while the second chooses between B_0 and B_1. Each call to measure yields outcomes a, b in {-1, +1}.
 
 The CHSH expression is defined as:
 \begin{equation}
@@ -48,7 +48,7 @@ S = |E(A_0B_0) + E(A_0B_1) + E(A_1B_0) - E(A_1B_1)|
 \label{eq:chsh}
 \end{equation}
 
-where $E(A_iB_j)$ represents the expectation value of the product of outcomes when Alice uses setting $A_i$ and Bob uses setting $B_j$.
+where E(A_iB_j) represents the expectation value of the product of outcomes when the first Experiment instance uses setting A_i and the second instance uses setting B_j.
 
 Local hidden variable theories, based on the assumptions of locality and realism, constrain this expression to:
 \begin{equation}
@@ -62,17 +62,17 @@ S \leq 2\sqrt{2} \approx 2.828
 \label{eq:tsirelson_bound}
 \end{equation}
 
-\subsection{Functional Reinterpretation}
+\subsection{Replicable Measurement Reinterpretation}
 
-We reinterpret the measurement outcomes as functions of the measurement settings and potentially shared information:
-\begin{align}
-a &= f_A(\text{setting}_A, \lambda) \\
-b &= f_B(\text{setting}_B, \lambda)
-\end{align}
+We reinterpret the measurement outcomes as calls to a known method, measure, on replicated Experiment instances:
+\begin{verbatim}
+a = experiment_A.measure(setting_A, lambda)
+b = experiment_B.measure(setting_B, lambda)
+\end{verbatim}
 
-where $\lambda$ represents a shared hidden variable or information channel, and $f_A$, $f_B$ are the functional implementations of Alice's and Bob's measurement strategies.
+where $\lambda$ represents a shared hidden variable or information channel, and experiment_A and experiment_B are two replicated instances exposing the same public measurement method.
 
-This functional perspective allows us to systematically explore the space of possible correlations by varying the structure and information content of these functions.
+This replicable-measurement perspective allows us to systematically explore the space of possible correlations by varying the structure and information content of these Experiment instances.
 
 \section{Methodology}
 
@@ -82,24 +82,24 @@ We developed a Python-based simulator that models CHSH experiments through the f
 
 \begin{enumerate}
 \item \textbf{Hidden variable generator}: Produces random values $\lambda$ according to specified distributions
-\item \textbf{Alice's and Bob's functions}: Deterministic or probabilistic functions that map measurement settings and hidden variables to outcomes
+\item \textbf{Experiment.measure instances}: Deterministic or probabilistic measure methods that map measurement settings and hidden variables to outcomes
 \item \textbf{Correlation evaluator}: Calculates expectation values and the CHSH expression over multiple trials
 \end{enumerate}
 
-\subsection{Function Classes}
+\subsection{Measurement Classes}
 
-We systematically analyze different classes of functions based on their informational dependencies:
+We systematically analyze different classes of measurement rules based on their informational dependencies:
 
 \begin{itemize}
-\item \textbf{Independent functions}: No shared information ($\lambda$ unused)
+\item \textbf{Independent measurement instances}: No shared information ($\lambda$ unused)
 \item \textbf{Shared randomness}: Common access to $\lambda$ but no other coupling
-\item \textbf{Non-local influence}: Functions that depend on both local and remote measurement settings
+\item \textbf{Non-local influence}: Measurement rules that depend on both local and remote measurement settings
 \item \textbf{Hybrid models}: Combinations of the above with varying degrees of information sharing
 \end{itemize}
 
 \subsection{Experimental Protocol}
 
-For each function pair $(f_A, f_B)$, we:
+For each pair of replicated Experiment instances, we:
 
 \begin{enumerate}
 \item Generate $N$ instances of the hidden variable $\lambda$
@@ -114,10 +114,10 @@ The number of trials $N$ is chosen to ensure statistical significance while main
 
 \subsection{Classical Correlations}
 
-Our simulations confirm that functions satisfying local realism constraints produce CHSH values bounded by 2:
+Our simulations confirm that Experiment instances satisfying local realism constraints produce CHSH values bounded by 2:
 
 \begin{itemize}
-\item \textbf{Independent functions}: Yield $S \approx 0$, reflecting the absence of correlations
+\item \textbf{Independent measurement instances}: Yield $S \approx 0$, reflecting the absence of correlations
 \item \textbf{Shared randomness with local determinism}: Produce $S \leq 2$, consistent with classical bounds
 \end{itemize}
 
@@ -126,8 +126,8 @@ Our simulations confirm that functions satisfying local realism constraints prod
 We observe violations of the classical bound ($S > 2$) in scenarios involving:
 
 \begin{itemize}
-\item \textbf{Information leakage}: When Bob's function has access to Alice's measurement setting
-\item \textbf{Non-local coupling}: Functions that explicitly depend on both measurement settings
+\item \textbf{Information leakage}: When the second instance.s measure method has access to the first instance.s setting
+\item \textbf{Non-local coupling}: Measurement rules that explicitly depend on both measurement settings
 \item \textbf{Adaptive strategies}: Functions that modify their behavior based on shared state
 \end{itemize}
 
@@ -135,18 +135,18 @@ Remarkably, even minimal informational coupling can produce significant violatio
 
 \subsection{Retro-analysis of Function Structure}
 
-By analyzing the functional forms that produce different CHSH values, we identify the minimal informational couplings necessary for classical bound violations. This reverse-engineering approach reveals the computational anatomy of non-local correlations.
+By analyzing the measurement forms that produce different CHSH values, we identify the minimal informational couplings necessary for classical bound violations. This reverse-engineering approach reveals the computational anatomy of non-local correlations.
 
 \section{Discussion}
 
 \subsection{Computational Insights}
 
-Our functional approach provides several novel insights:
+Our Experiment.measure approach provides several novel insights:
 
 \begin{enumerate}
-\item The boundary between classical and quantum-like behavior can be precisely characterized in terms of information flow between functions
+\item The boundary between classical and quantum-like behavior can be precisely characterized in terms of information flow into measure
 \item Minimal violations of locality can be achieved with surprisingly simple computational structures
-\item The functional perspective naturally connects to communication complexity theory~\cite{toner2003}
+\item The replicable-measurement perspective naturally connects to communication complexity theory~\cite{toner2003}
 \end{enumerate}
 
 \subsection{Pedagogical Applications}
@@ -161,7 +161,7 @@ This framework offers significant educational value by:
 
 \subsection{Theoretical Implications}
 
-The functional perspective opens new research directions in:
+The replicable-measurement perspective opens new research directions in:
 
 \begin{itemize}
 \item Understanding the computational resources required for quantum advantage
@@ -175,7 +175,7 @@ Several promising research directions emerge from this work:
 
 \subsection{Formal Classification}
 
-We plan to develop a formal taxonomy of function types based on their CHSH behavior, potentially leading to new theorems about the computational structure of quantum correlations.
+We plan to develop a formal taxonomy of measurement types based on their CHSH behavior, potentially leading to new theorems about the computational structure of quantum correlations.
 
 \subsection{Minimal Information Protocols}
 
@@ -187,15 +187,15 @@ The framework can be extended to more complex Bell scenarios involving multiple 
 
 \subsection{Connection to Pseudotelepathy}
 
-Exploring the relationship between our functional models and pseudotelepathy games~\cite{brassard2005} may reveal new quantum advantages in distributed computing.
+Exploring the relationship between our replicable measurement models and pseudotelepathy games~\cite{brassard2005} may reveal new quantum advantages in distributed computing.
 
 \section{Conclusion}
 
-This work introduces a novel computational perspective on quantum correlations through the lens of functional programming. By simulating and reverse-engineering CHSH-type systems, we provide new insights into the informational structure of entanglement.
+This work introduces a novel computational perspective on quantum correlations through the lens of replicable measurement. By simulating and reverse-engineering CHSH-type systems, we provide new insights into the informational structure of entanglement.
 
-Our results demonstrate that the divide between classical and quantum behavior can be understood in terms of the computational architecture of measurement functions. This perspective complements traditional probabilistic treatments and opens new avenues for both theoretical investigation and practical application.
+Our results demonstrate that the divide between classical and quantum behavior can be understood in terms of the computational architecture of measurement methods. This perspective complements traditional probabilistic treatments and opens new avenues for both theoretical investigation and practical application.
 
-The functional framework presented here offers a powerful tool for exploring the computational foundations of quantum mechanics, with implications for quantum information processing, education, and our fundamental understanding of non-local correlations.
+The Experiment.measure framework presented here offers a powerful tool for exploring the computational foundations of quantum mechanics, with implications for quantum information processing, education, and our fundamental understanding of non-local correlations.
 
 \section*{Acknowledgments}
 
@@ -208,30 +208,33 @@ The author thanks the quantum information community for inspiring discussions on
 \begin{verbatim}
 import random
 
-def hidden_variable():
-    return random.random()
+class Experiment:
+    def __init__(self, name, rule):
+        self.name = name
+        self.rule = rule
 
-def alice(setting, hidden):
-    if setting == 0:
-        return 1 if hidden > 0.5 else -1
-    else:
-        return 1 if hidden > 0.3 else -1
+    def measure(self, setting, hidden):
+        return self.rule(self.name, setting, hidden)
 
-def bob(setting, hidden):
-    if setting == 0:
-        return 1 if hidden < 0.7 else -1
-    else:
-        return 1 if hidden < 0.2 else -1
+def threshold_rule(instance_name, setting, hidden):
+    thresholds = {
+        "alice": (0.25, 0.70),
+        "bob": (0.40, 0.60),
+    }
+    threshold = thresholds[instance_name][setting]
+    return 1 if hidden >= threshold else -1
 
 def run_chsh(n_trials=10000):
     settings = [(0,0), (0,1), (1,0), (1,1)]
     results = {s: [] for s in settings}
+    alice = Experiment("alice", threshold_rule)
+    bob = Experiment("bob", threshold_rule)
 
     for _ in range(n_trials):
-        hidden = hidden_variable()
+        hidden = random.random()
         for a_set, b_set in settings:
-            a = alice(a_set, hidden)
-            b = bob(b_set, hidden)
+            a = alice.measure(a_set, hidden)
+            b = bob.measure(b_set, hidden)
             results[(a_set, b_set)].append(a * b)
 
     E = {k: sum(v)/len(v) for k,v in results.items()}

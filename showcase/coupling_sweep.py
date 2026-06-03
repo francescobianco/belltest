@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from bell_lab import (
+    Experiment,
     ModelSpec,
     TrialContext,
     deterministic_table,
@@ -12,19 +13,19 @@ from bell_lab import (
 
 
 def make_partial_leak_model(leak_probability: float) -> ModelSpec:
-    def bob(setting: int, ctx: TrialContext) -> int:
+    def leaky_measure(role: str, setting: int, ctx: TrialContext) -> int:
         if setting == 0:
             return 1
         if ctx.rng.random() < leak_probability:
-            return -1 if ctx.alice_setting == 1 else 1
+            return -1 if ctx.setting_a == 1 else 1
         return 1
 
     return ModelSpec(
         name=f"partial_leak_{leak_probability:.2f}",
         family="non_local_leak_sweep",
-        description="Bob reads Alice's setting with tunable probability.",
-        alice=deterministic_table((1, 1)),
-        bob=bob,
+        description="The second Experiment instance reads the first setting with tunable probability.",
+        experiment_a=Experiment("alice", deterministic_table((1, 1))),
+        experiment_b=Experiment("bob", leaky_measure),
     )
 
 

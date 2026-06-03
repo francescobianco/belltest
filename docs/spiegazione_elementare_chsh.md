@@ -11,7 +11,7 @@ A1 con B0
 A1 con B1
 ```
 
-Ogni volta una funzione risponde solo con:
+Ogni volta il metodo measure risponde solo con:
 
 ```text
 +1 oppure -1
@@ -25,26 +25,26 @@ Alla fine calcoliamo:
 S = |E(A0B0) + E(A0B1) + E(A1B0) - E(A1B1)|
 ```
 
-## Caso 1: funzione con S < 2
+## Caso 1: misura con S < 2
 
-Questa e' una funzione locale con variabile nascosta.
+Questa e' una misura locale con variabile nascosta.
 
 Vuol dire:
 
-- Alice ha la sua funzione.
-- Bob ha la sua funzione.
+- `alice` e una istanza di `Experiment`.
+- `bob` e una istanza di `Experiment`.
 - Entrambi vedono lo stesso numero nascosto `lambda`.
-- Alice non vede la scelta di Bob.
-- Bob non vede la scelta di Alice.
+- `alice.measure` non vede la scelta remota.
+- `bob.measure` non vede la scelta remota.
 
 Esempio mentale:
 
 ```text
-alice(setting, lambda) -> +1 oppure -1
-bob(setting, lambda)   -> +1 oppure -1
+alice.measure(setting, context) -> +1 oppure -1
+bob.measure(setting, context)   -> +1 oppure -1
 ```
 
-Anche se Alice e Bob condividono `lambda`, restano separati.
+Anche se le due istanze condividono `lambda`, i loro metodi `measure` restano locali.
 
 Risultato tipico:
 
@@ -61,12 +61,12 @@ S < 2
 Interpretazione elementare:
 
 ```text
-la funzione ha struttura, ma non rompe il limite classico
+la misura ha struttura, ma non rompe il limite classico
 ```
 
-## Caso 2: funzione con S > 2
+## Caso 2: misura con S > 2
 
-Qui il risultato non puo' essere spiegato da due funzioni locali classiche che
+Qui il risultato non puo' essere spiegato da due istanze locali classiche di `Experiment` che
 condividono solo una variabile nascosta.
 
 Nel demo usiamo un campionatore quantum-like.
@@ -77,11 +77,11 @@ Esempio mentale:
 misura_congiunta(setting_a, setting_b) -> risposta_a, risposta_b
 ```
 
-La funzione non e' piu' semplicemente:
+La misura non e piu semplicemente:
 
 ```text
-alice(setting_a, lambda)
-bob(setting_b, lambda)
+alice.measure(setting_a, context)
+bob.measure(setting_b, context)
 ```
 
 Produce invece una coppia di risposte gia' correlata.
@@ -107,8 +107,8 @@ la correlazione e' troppo forte per il modello locale classico
 ## Differenza in una riga
 
 ```text
-S < 2  -> compatibile con funzioni locali classiche
-S > 2  -> non compatibile con sole funzioni locali classiche
+S < 2  -> compatibile con istanze locali classiche di `Experiment`
+S > 2  -> non compatibile con sole istanze locali classiche di `Experiment`
 ```
 
 ## Attenzione
@@ -117,7 +117,7 @@ S > 2  -> non compatibile con sole funzioni locali classiche
 quantistica.
 
 In codice possiamo ottenere `S > 2` anche barando, per esempio facendo leggere a
-Bob la scelta di Alice.
+`bob.measure` la scelta di `alice`.
 
 Per questo guardiamo anche la firma anatomica:
 
@@ -129,20 +129,19 @@ diagnostic_label
 
 Se `S > 2` ma il signalling e' alto, probabilmente c'e' leakage informativo.
 
-Se `S > 2` ma il signalling e' basso, il comportamento assomiglia di piu' a una
+Se `S > 2` ma il signalling e' basso, il comportamento assomiglia di e'' a una
 correlazione quantum-like.
 
 # auto_chsh
 
-Nel CHSH normale abbiamo due funzioni:
+Nel CHSH normale abbiamo due istanze replicabili:
 
 ```text
-alice(...)
-bob(...)
+alice.measure(...)
+bob.measure(...)
 ```
 
-In `auto_chsh` invece vogliamo studiare una sola funzione confrontata con se
-stessa.
+In `auto_chsh` invece vogliamo studiare un solo metodo `measure confrontato con se stesso.
 
 La forma diventa:
 
@@ -150,27 +149,27 @@ La forma diventa:
 F(role, setting, context) -> +1 oppure -1
 ```
 
-La stessa funzione `F` viene chiamata due volte:
+Lo stesso metodo `measure viene chiamato su due istanze:
 
 ```text
-F("A", setting_a, context)
-F("B", setting_b, context)
+alice.measure(setting_a, context)
+bob.measure(setting_b, context)
 ```
 
-Quindi non stiamo piu' chiedendo:
+Quindi non stiamo e'' chiedendo:
 
 ```text
-come interagiscono Alice e Bob?
+che cosa succede quando replichiamo lo stesso esperimento in due istanze?
 ```
 
 Stiamo chiedendo:
 
 ```text
-che anatomia interna ha questa singola funzione quando la uso in due ruoli?
+che anatomia interna ha il metodo measure quando lo replico in due istanze?
 ```
 
 `auto_chsh` serve proprio a questo: trasformare il test di Bell in una sonda
-per una funzione ignota.
+per una misura ignota.
 
 Comando:
 

@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 import random
-from typing import Callable
-
 from bell_lab import (
     CHSHResult,
     ModelSpec,
@@ -13,37 +11,35 @@ from bell_lab import (
     format_expectations,
     quantum_like_joint,
     run_model,
+    Experiment,
     threshold_response,
 )
 
-AutoFunction = Callable[[str, int, TrialContext], Outcome]
+def local_measure_rule(role: str, setting: int, ctx: TrialContext) -> Outcome:
+    """One measure rule reused by two Experiment instances."""
+
+    if role == "alice":
+        return threshold_response(0.25, 0.70)(role, setting, ctx)
+    return threshold_response(0.40, 0.60)(role, setting, ctx)
 
 
-def local_auto_function(role: str, setting: int, ctx: TrialContext) -> Outcome:
-    """One local function reused as A and B, with different thresholds by role."""
+def leaky_measure_rule(role: str, setting: int, ctx: TrialContext) -> Outcome:
+    """One measure rule whose second instance can inspect the first setting."""
 
-    if role == "A":
-        return threshold_response(0.25, 0.70)(setting, ctx)
-    return threshold_response(0.40, 0.60)(setting, ctx)
-
-
-def leaky_auto_function(role: str, setting: int, ctx: TrialContext) -> Outcome:
-    """One function whose B role can inspect A's setting."""
-
-    if role == "A":
+    if role == "alice":
         return 1
     if setting == 0:
         return 1
-    return -1 if ctx.alice_setting == 1 else 1
+    return -1 if ctx.setting_a == 1 else 1
 
 
-def auto_model(name: str, fn: AutoFunction, description: str) -> ModelSpec:
+def auto_model(name: str, measure_rule, description: str) -> ModelSpec:
     return ModelSpec(
         name=name,
         family="auto_chsh",
         description=description,
-        alice=lambda setting, ctx: fn("A", setting, ctx),
-        bob=lambda setting, ctx: fn("B", setting, ctx),
+        experiment_a=Experiment("alice", measure_rule),
+        experiment_b=Experiment("bob", measure_rule),
     )
 
 
@@ -66,8 +62,8 @@ def main() -> None:
     local = run_model(
         auto_model(
             "auto_local",
-            local_auto_function,
-            "Single function reused locally in role A and role B.",
+            local_measure_rule,
+            "Single Experiment.measure rule reused by two instances.",
         ),
         trials=20_000,
         seed=77,
@@ -75,8 +71,8 @@ def main() -> None:
     leaky = run_model(
         auto_model(
             "auto_leaky",
-            leaky_auto_function,
-            "Single function reused with access to the remote setting.",
+            leaky_measure_rule,
+            "Single Experiment.measure rule reused with access to the remote setting.",
         ),
         trials=20_000,
         seed=77,
@@ -92,11 +88,11 @@ def main() -> None:
         seed=77,
     )
 
-    print("auto_chsh: one function measured against itself")
+    print("auto_chsh: one Experiment.measure rule measured against itself")
     print("=" * 48)
-    print_result("same function, local roles", local)
-    print_result("same function, remote-setting leak", leaky)
-    print_result("single joint function, quantum-like reference", quantum_reference)
+    print_result("same measure rule, local roles", local)
+    print_result("same measure rule, remote-setting leak", leaky)
+    print_result("single joint measure, quantum-like reference", quantum_reference)
     print("Reading:")
     print("- auto_local stays under the Bell/CHSH limit")
     print("- auto_leaky exceeds the limit because one role reads the remote setting")
